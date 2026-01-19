@@ -96,6 +96,12 @@ docker rm -f status-page
 docker rmi diegofnunesbr/status-page:latest
 ```
 
+### Remover o arquivo `.env`
+
+```bash
+rm .env
+```
+
 ## Licença
 
 MIT
