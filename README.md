@@ -15,7 +15,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Disco (usado / total + %)
 - Timestamp da última atualização
 
-A página é atualizada automaticamente a cada **60 segundos**.
+A página é atualizada automaticamente a cada **30 segundos**.
 
 ## Pré-requisitos
 
@@ -27,26 +27,18 @@ A página é atualizada automaticamente a cada **60 segundos**.
 ## Configuração (obrigatória)
 
 A aplicação utiliza autenticação simples (login por página).
+
 As credenciais devem ser definidas em um arquivo `.env`.
 
 ### Criar o arquivo `.env`
 
-No diretório do projeto:
-
 ```bash
-vim .env
-```
-
-Conteúdo mínimo:
-
-```env
+cat <<EOF > "$HOME/.env"
 STATUS_USER=admin
 STATUS_PASS=password
 STATUS_SECRET=chave_randomica
+EOF
 ```
-
-O arquivo `.env` não deve ser versionado (já listado no .gitignore).
-Recomenda-se utilizar uma senha forte para ambientes compartilhados.
 
 ## Uso rápido (recomendado)
 
@@ -55,7 +47,7 @@ docker run -d \
   --name status-page \
   --restart unless-stopped \
   --network host \
-  --env-file .env \
+  --env-file "$HOME/.env" \
   -v /etc/hostname:/host/etc/hostname:ro \
   -v /proc:/host/proc:ro \
   -v /:/host:ro \
@@ -66,8 +58,6 @@ docker run -d \
 ## Acesse no navegador
 
 http://<IP_DO_HOST>/
-
-Será exibida a tela de login antes do acesso ao status.
 
 ## Observações importantes
 
