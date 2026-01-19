@@ -15,21 +15,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Disco (usado / total + %)
 - Timestamp da última atualização
 
-A atualização ocorre `a cada refresh (F5)`.
-
-## Exemplo de saída
-
-```text
-Hostname : vm_ubuntu
-SO       : Ubuntu 24.04.3 LTS
-IP       : 192.168.0.2
-Uptime   : 6h 37min
-CPU      : 1% (16 vCPU)
-Memória  : 1.2 GB / 15.5 GB (8%)
-Disco    : 238.4 GB / 930.3 GB (26%)
-
-Atualizado em: Tue Jan 13 15:00:23 2026
-```
+A página é atualizada automaticamente a cada **60 segundos**.
 
 ## Pré-requisitos
 
@@ -38,6 +24,30 @@ Atualizado em: Tue Jan 13 15:00:23 2026
 
 ---
 
+## Configuração (obrigatória)
+
+A aplicação utiliza autenticação simples (login por página).
+As credenciais devem ser definidas em um arquivo `.env`.
+
+### Criar o arquivo `.env`
+
+No diretório do projeto:
+
+```bash
+vim .env
+```
+
+Conteúdo mínimo:
+
+```env
+STATUS_USER=admin
+STATUS_PASS=password
+STATUS_SECRET=chave_randomica
+```
+
+O arquivo `.env` não deve ser versionado (já listado no .gitignore).
+Recomenda-se utilizar uma senha forte para ambientes compartilhados.
+
 ## Uso rápido (recomendado)
 
 ```bash
@@ -45,6 +55,7 @@ docker run -d \
   --name status-page \
   --restart unless-stopped \
   --network host \
+  --env-file .env \
   -v /etc/hostname:/host/etc/hostname:ro \
   -v /proc:/host/proc:ro \
   -v /:/host:ro \
@@ -56,11 +67,16 @@ docker run -d \
 
 http://<IP_DO_HOST>/
 
+Será exibida a tela de login antes do acesso ao status.
+
 ## Observações importantes
 
-- Não utilize `-p 80:80`. O container usa `--network host` para refletir corretamente o IP e recursos do host
-- Não há coleta em background: as métricas são calculadas somente quando a página é acessada
-- Consumo mínimo de recursos: CPU: ~0% | Memória: ~20–30 MB
+- Não utilize `-p 80:80`.
+- O container usa `--network host` para refletir corretamente o IP e recursos do host.
+- Não há coleta em background.
+- As métricas são calculadas somente quando a página é acessada.
+- Sessão expira automaticamente após 30 minutos de inatividade.
+- Consumo mínimo de recursos: CPU: ~0% | Memória: ~20–30 MB.
 
 ## Build local (opcional)
 
