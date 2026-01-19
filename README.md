@@ -99,7 +99,7 @@ docker rmi diegofnunesbr/status-page:latest
 ### Remover o arquivo `.env`
 
 ```bash
-rm .env
+rm -f "$HOME/.env"
 ```
 
 ## Licença
