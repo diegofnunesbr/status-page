@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 import psutil
 import socket
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 import subprocess
 import os
@@ -9,6 +9,7 @@ import os
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("STATUS_SECRET", "status-page-secret")
+app.permanent_session_lifetime = timedelta(minutes=1)
 
 STATUS_USER = os.environ.get("STATUS_USER", "admin")
 STATUS_PASS = os.environ.get("STATUS_PASS", "admin")
@@ -67,6 +68,7 @@ def login():
         pwd = request.form.get("password")
 
         if user == STATUS_USER and pwd == STATUS_PASS:
+            session.permanent = True
             session["auth"] = True
             return redirect(url_for("index"))
 
