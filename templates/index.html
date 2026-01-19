@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <title>Status - {{ status.hostname }}</title>
 
-  <!-- Viewport forte para mobile -->
   <meta name="viewport"
         content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 
-  <!-- Auto refresh -->
+  <!-- Auto refresh: 60 segundos -->
   <meta http-equiv="refresh" content="60">
 
   <link rel="stylesheet"
@@ -17,6 +16,10 @@
 <body>
   <div class="container">
     <h1>{{ status.hostname }}</h1>
+
+    <div class="logout">
+      <a href="/logout">Sair</a>
+    </div>
 
     <div class="card">
       <div class="item"><span>Sistema</span><span>{{ status.os_info }}</span></div>

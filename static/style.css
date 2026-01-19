@@ -1,4 +1,3 @@
-/* FIX GLOBAL MOBILE */
 html {
   font-size: 16px;
   -webkit-text-size-adjust: 100%;
@@ -24,7 +23,7 @@ body {
 
 h1 {
   text-align: center;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   font-size: 1.4rem;
 }
 
@@ -51,4 +50,68 @@ h1 {
   text-align: center;
   font-size: 0.75rem;
   color: #94a3b8;
+  margin-top: 8px;
+}
+
+.login-card {
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-form label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+}
+
+.login-form input {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.login-button {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-button:hover {
+  background: #1d4ed8;
+}
+
+.login-error {
+  color: #f87171;
+  text-align: center;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+}
+
+.logout {
+  text-align: right;
+  margin-bottom: 8px;
+}
+
+.logout a {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-decoration: none;
+}
+
+.logout a:hover {
+  color: #e5e7eb;
 }
