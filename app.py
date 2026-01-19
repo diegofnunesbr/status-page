@@ -5,14 +5,20 @@ from datetime import datetime, timedelta
 from pathlib import Path
 import subprocess
 import os
+import logging
+
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 app = Flask(__name__)
 
 app.secret_key = os.environ.get("STATUS_SECRET", "status-page-secret")
-app.permanent_session_lifetime = timedelta(minutes=1)
+app.permanent_session_lifetime = timedelta(minutes=30)
 
 STATUS_USER = os.environ.get("STATUS_USER", "admin")
 STATUS_PASS = os.environ.get("STATUS_PASS", "admin")
+
+def log_event(message):
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
 
 def get_os():
     try:
@@ -66,18 +72,23 @@ def login():
     if request.method == "POST":
         user = request.form.get("username")
         pwd = request.form.get("password")
+        ip = request.remote_addr
 
         if user == STATUS_USER and pwd == STATUS_PASS:
             session.permanent = True
             session["auth"] = True
+            log_event(f"LOGIN OK user={user} ip={ip}")
             return redirect(url_for("index"))
 
+        log_event(f"LOGIN FAIL user={user} ip={ip}")
         return render_template("login.html", error=True)
 
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
+    ip = request.remote_addr
+    log_event(f"LOGOUT ip={ip}")
     session.clear()
     return redirect(url_for("login"))
 
