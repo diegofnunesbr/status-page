@@ -15,8 +15,6 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Disco (usado / total + %)
 - Timestamp da última atualização
 
-A página é atualizada automaticamente a cada **30 segundos**.
-
 ## Pré-requisitos
 
 - Docker
@@ -65,7 +63,8 @@ http://<IP_DO_HOST>/
 - O container usa `--network host` para refletir corretamente o IP e recursos do host.
 - Não há coleta em background.
 - As métricas são calculadas somente quando a página é acessada.
-- Sessão expira automaticamente após 30 minutos de inatividade.
+- Sessão expira automaticamente após **30 minutos** de inatividade.
+- A página é atualizada automaticamente a cada **30 segundos**.
 - Consumo mínimo de recursos: CPU: ~0% | Memória: ~20–30 MB.
 
 ## Build local (opcional)
