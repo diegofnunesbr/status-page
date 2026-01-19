@@ -40,7 +40,7 @@ def get_system_status():
             datetime.now() - datetime.fromtimestamp(psutil.boot_time())
         ).split(".")[0],
 
-        "cpu_percent": psutil.cpu_percent(interval=1),
+        "cpu_percent": psutil.cpu_percent(),
 
         "memory_used": round(memory.used / (1024 ** 3), 1),
         "memory_total": round(memory.total / (1024 ** 3), 1),
