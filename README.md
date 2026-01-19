@@ -55,7 +55,9 @@ docker run -d \
 
 ## Acesse no navegador
 
-http://IP_DO_HOST/
+http://192.168.1.2/
+
+Substitua pelo IP do seu host.
 
 ## Observações importantes
 
