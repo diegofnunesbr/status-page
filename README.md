@@ -15,7 +15,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Disco (usado / total + %)
 - Timestamp da última atualização
 
-> **Importante:** a página é atualizada automaticamente a cada **30 segundos**.<br>
+> A página é atualizada automaticamente a cada **30 segundos**.<br>
 > Sessão expira automaticamente após **30 minutos** de inatividade.
 
 ## Pré-requisitos
@@ -27,7 +27,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 
 ## Configuração (obrigatória)
 
-> **Importante:** a aplicação utiliza autenticação simples (login por página).<br>
+> A aplicação utiliza autenticação simples (login por página).<br>
 > As credenciais devem ser definidas em um arquivo `.env`.
 
 ### Criar o arquivo `.env`
