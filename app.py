@@ -1,10 +1,32 @@
 from flask import Flask, render_template
 import psutil
-import platform
 import socket
 from datetime import datetime
+from pathlib import Path
+import subprocess
 
 app = Flask(__name__)
+
+def get_os():
+    try:
+        data = Path("/host/etc/os-release").read_text()
+        for line in data.splitlines():
+            if line.startswith("PRETTY_NAME="):
+                return line.split("=", 1)[1].strip().strip('"')
+    except Exception:
+        pass
+    return "Unknown"
+
+def get_ip():
+    try:
+        result = subprocess.check_output(
+            ["ip", "route", "get", "1.1.1.1"],
+            stderr=subprocess.DEVNULL,
+            text=True
+        )
+        return result.split("src")[1].split()[0]
+    except Exception:
+        return "N/A"
 
 def get_system_status():
     memory = psutil.virtual_memory()
@@ -12,8 +34,8 @@ def get_system_status():
 
     return {
         "hostname": socket.gethostname(),
-        "os_info": platform.platform(),
-        "ip_address": socket.gethostbyname(socket.gethostname()),
+        "os_info": get_os(),
+        "ip_address": get_ip(),
         "uptime": str(
             datetime.now() - datetime.fromtimestamp(psutil.boot_time())
         ).split(".")[0],

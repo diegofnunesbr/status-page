@@ -18,7 +18,8 @@ COPY app.py .
 COPY templates ./templates
 COPY static ./static
 
-RUN pip install --no-cache-dir flask psutil
+RUN pip install --no-cache-dir flask psutil \
+ && apk del gcc musl-dev linux-headers
 
 EXPOSE 80
 
