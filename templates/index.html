@@ -4,10 +4,15 @@
   <meta charset="UTF-8" />
   <title>Status - {{ status.hostname }}</title>
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Viewport forte para mobile -->
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+
+  <!-- Auto refresh -->
   <meta http-equiv="refresh" content="10">
 
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}?v=1">
 </head>
 <body>
   <div class="container">
