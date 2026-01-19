@@ -72,8 +72,7 @@ http://<IP_DO_HOST>/
 
 ```bash
 git clone https://github.com/diegofnunesbr/status-page
-cd status-page
-docker build -t diegofnunesbr/status-page:latest .
+docker build -t diegofnunesbr/status-page:latest status-page
 ```
 
 ## Publicação no Docker Hub
