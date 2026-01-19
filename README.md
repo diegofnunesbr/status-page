@@ -55,7 +55,7 @@ docker run -d \
 
 ## Acesse no navegador
 
-http://<IP_DO_HOST>/
+http://IP_DO_HOST/
 
 ## Observações importantes
 
