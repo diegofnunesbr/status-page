@@ -30,6 +30,11 @@ def format_disk(size_bytes):
         return f"{gb / 1024:.1f} TB"
     return f"{gb:.1f} GB"
 
+def get_disk():
+    if Path("/host/mnt/c").exists():
+        return psutil.disk_usage("/host/mnt/c")
+    return psutil.disk_usage("/host")
+
 def get_os():
     try:
         data = Path("/host/etc/os-release").read_text()
@@ -63,7 +68,7 @@ def is_logged_in():
 
 def get_system_status():
     memory = psutil.virtual_memory()
-    disk = psutil.disk_usage("/")
+    disk = get_disk()
 
     return {
         "hostname": socket.gethostname(),
@@ -85,7 +90,10 @@ def get_system_status():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if request.form.get("username") == STATUS_USER and request.form.get("password") == STATUS_PASS:
+        if (
+            request.form.get("username") == STATUS_USER
+            and request.form.get("password") == STATUS_PASS
+        ):
             session["logged_in"] = True
             session["last_activity"] = datetime.utcnow().isoformat()
             log.info(f"LOGIN OK user={STATUS_USER} ip={request.remote_addr}")
