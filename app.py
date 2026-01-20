@@ -1,11 +1,7 @@
 from flask import Flask, render_template, redirect, request, session
-import psutil
-import socket
-import subprocess
-from datetime import datetime, timedelta
+import psutil, socket, subprocess, os, logging
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-import os
-import logging
 
 app = Flask(__name__)
 app.secret_key = os.getenv("STATUS_SECRET", "change-me")
@@ -14,22 +10,23 @@ SESSION_TIMEOUT = timedelta(minutes=30)
 STATUS_USER = os.getenv("STATUS_USER")
 STATUS_PASS = os.getenv("STATUS_PASS")
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(message)s"
-)
-logging.getLogger("werkzeug").setLevel(logging.ERROR)
 log = logging.getLogger("status-page")
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
+log.addHandler(handler)
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
-def format_gb(v):
-    return round(v / (1024 ** 3), 1)
+now = lambda: datetime.now(timezone.utc)
 
-def format_disk(v):
-    gb = v / (1024 ** 3)
-    return f"{gb / 1024:.1f} TB" if gb >= 1024 else f"{gb:.1f} GB"
+gb = lambda b: round(b / (1024 ** 3), 1)
 
-def get_disk():
-    return psutil.disk_usage("/host/mnt/c") if Path("/host/mnt/c").exists() else psutil.disk_usage("/host")
+def format_disk(b):
+    g = b / (1024 ** 3)
+    return f"{g / 1024:.1f} TB" if g >= 1024 else f"{g:.1f} GB"
+
+def disk_usage():
+    return psutil.disk_usage("/host/mnt/c" if Path("/host/mnt/c").exists() else "/host")
 
 def get_os():
     try:
@@ -52,28 +49,32 @@ def get_ip():
     except Exception:
         return "N/A"
 
-def is_logged_in():
+def client_ip():
+    return (
+        request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.headers.get("X-Real-IP")
+        or request.remote_addr
+    )
+
+def logged_in():
     last = session.get("last_activity")
-    if not last:
-        return False
-    if datetime.utcnow() - datetime.fromisoformat(last) > SESSION_TIMEOUT:
+    if not last or now() - datetime.fromisoformat(last) > SESSION_TIMEOUT:
         session.clear()
         return False
-    session["last_activity"] = datetime.utcnow().isoformat()
+    session["last_activity"] = now().isoformat()
     return True
 
-def get_system_status():
+def status():
     mem = psutil.virtual_memory()
-    disk = get_disk()
-
+    disk = disk_usage()
     return {
         "hostname": socket.gethostname(),
         "os_info": get_os(),
         "ip_address": get_ip(),
         "uptime": str(datetime.now() - datetime.fromtimestamp(psutil.boot_time())).split(".")[0],
         "cpu_percent": psutil.cpu_percent(),
-        "memory_used": format_gb(mem.used),
-        "memory_total": format_gb(mem.total),
+        "memory_used": gb(mem.used),
+        "memory_total": gb(mem.total),
         "memory_percent": mem.percent,
         "disk_used": format_disk(disk.used),
         "disk_total": format_disk(disk.total),
@@ -86,25 +87,22 @@ def login():
     error = False
     if request.method == "POST":
         if request.form.get("username") == STATUS_USER and request.form.get("password") == STATUS_PASS:
-            session["logged_in"] = True
-            session["last_activity"] = datetime.utcnow().isoformat()
-            log.info(f"LOGIN OK user={STATUS_USER} ip={request.remote_addr}")
+            session.update(logged_in=True, last_activity=now().isoformat())
+            log.info(f"LOGIN OK user={STATUS_USER} ip={client_ip()}")
             return redirect("/")
         error = True
-        log.info(f"LOGIN FAIL user={request.form.get('username')} ip={request.remote_addr}")
+        log.info(f"LOGIN FAIL user={request.form.get('username')} ip={client_ip()}")
     return render_template("login.html", error=error)
 
 @app.route("/logout")
 def logout():
-    log.info(f"LOGOUT ip={request.remote_addr}")
+    log.info(f"LOGOUT ip={client_ip()}")
     session.clear()
     return redirect("/login")
 
 @app.route("/")
 def index():
-    if not is_logged_in():
-        return redirect("/login")
-    return render_template("index.html", status=get_system_status())
+    return render_template("index.html", status=status()) if logged_in() else redirect("/login")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=80)
