@@ -1,102 +1,108 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, redirect, request, session
 import psutil
 import socket
+import subprocess
 from datetime import datetime, timedelta
 from pathlib import Path
-import subprocess
 import os
 import logging
 
-logging.getLogger("werkzeug").setLevel(logging.ERROR)
-
 app = Flask(__name__)
 
-app.secret_key = os.environ.get("STATUS_SECRET", "status-page-secret")
-app.permanent_session_lifetime = timedelta(minutes=30)
+app.secret_key = os.getenv("STATUS_SECRET", "change-me")
+SESSION_TIMEOUT = timedelta(minutes=30)
 
-STATUS_USER = os.environ.get("STATUS_USER", "admin")
-STATUS_PASS = os.environ.get("STATUS_PASS", "admin")
+STATUS_USER = os.getenv("STATUS_USER")
+STATUS_PASS = os.getenv("STATUS_PASS")
 
-def log_event(message):
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {message}")
+log = logging.getLogger("status-page")
+log.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter("[%(asctime)s] %(message)s")
+handler.setFormatter(formatter)
+log.addHandler(handler)
+
+logging.getLogger("werkzeug").setLevel(logging.ERROR)
+
+def format_disk(size_bytes):
+    gb = size_bytes / (1024 ** 3)
+    if gb >= 1024:
+        return f"{gb / 1024:.1f} TB"
+    return f"{gb:.1f} GB"
 
 def get_os():
     try:
-        for line in Path("/host/etc/os-release").read_text().splitlines():
+        data = Path("/host/etc/os-release").read_text()
+        for line in data.splitlines():
             if line.startswith("PRETTY_NAME="):
-                return line.split("=", 1)[1].strip('"')
+                return line.split("=", 1)[1].strip().strip('"')
     except Exception:
         pass
     return "Unknown"
 
 def get_ip():
     try:
-        output = subprocess.check_output(
+        result = subprocess.check_output(
             ["ip", "route", "get", "1.1.1.1"],
             stderr=subprocess.DEVNULL,
             text=True
         )
-        return output.split("src")[1].split()[0]
+        return result.split("src")[1].split()[0]
     except Exception:
         return "N/A"
 
-def gb(value):
-    return round(value / (1024 ** 3), 1)
+def is_logged_in():
+    last = session.get("last_activity")
+    if not last:
+        return False
+    if datetime.utcnow() - datetime.fromisoformat(last) > SESSION_TIMEOUT:
+        session.clear()
+        return False
+    session["last_activity"] = datetime.utcnow().isoformat()
+    return True
 
 def get_system_status():
     memory = psutil.virtual_memory()
     disk = psutil.disk_usage("/")
-    uptime = datetime.now() - datetime.fromtimestamp(psutil.boot_time())
 
     return {
         "hostname": socket.gethostname(),
         "os_info": get_os(),
         "ip_address": get_ip(),
-        "uptime": str(uptime).split(".")[0],
-
+        "uptime": str(
+            datetime.now() - datetime.fromtimestamp(psutil.boot_time())
+        ).split(".")[0],
         "cpu_percent": psutil.cpu_percent(),
-
-        "memory_used": gb(memory.used),
-        "memory_total": gb(memory.total),
+        "memory_used": round(memory.used / (1024 ** 3), 1),
+        "memory_total": round(memory.total / (1024 ** 3), 1),
         "memory_percent": memory.percent,
-
-        "disk_used": gb(disk.used),
-        "disk_total": gb(disk.total),
+        "disk_used": format_disk(disk.used),
+        "disk_total": format_disk(disk.total),
         "disk_percent": disk.percent,
-
         "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
     }
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        user = request.form.get("username")
-        pwd = request.form.get("password")
-        ip = request.remote_addr
-
-        if user == STATUS_USER and pwd == STATUS_PASS:
-            session.permanent = True
-            session["auth"] = True
-            log_event(f"LOGIN OK user={user} ip={ip}")
-            return redirect(url_for("index"))
-
-        log_event(f"LOGIN FAIL user={user} ip={ip}")
-        return render_template("login.html", error=True)
-
+        if request.form.get("username") == STATUS_USER and request.form.get("password") == STATUS_PASS:
+            session["logged_in"] = True
+            session["last_activity"] = datetime.utcnow().isoformat()
+            log.info(f"LOGIN OK user={STATUS_USER} ip={request.remote_addr}")
+            return redirect("/")
+        log.info(f"LOGIN FAIL user={request.form.get('username')} ip={request.remote_addr}")
     return render_template("login.html")
 
 @app.route("/logout")
 def logout():
-    ip = request.remote_addr
-    log_event(f"LOGOUT ip={ip}")
+    log.info(f"LOGOUT ip={request.remote_addr}")
     session.clear()
-    return redirect(url_for("login"))
+    return redirect("/login")
 
 @app.route("/")
 def index():
-    if not session.get("auth"):
-        return redirect(url_for("login"))
-
+    if not is_logged_in():
+        return redirect("/login")
     return render_template("index.html", status=get_system_status())
 
 if __name__ == "__main__":
