@@ -26,7 +26,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 
 ## Configuração (obrigatória)
 
-A aplicação utiliza autenticação simples (login por página). As credenciais devem ser definidas em um arquivo `.env`.
+A aplicação utiliza autenticação simples por página, com credenciais definidas em um arquivo `.env`.
 
 ### Criar o arquivo `.env`
 
