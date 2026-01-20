@@ -16,7 +16,6 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Timestamp da última atualização
 
 > A página é atualizada automaticamente a cada **30 segundos**.
->
 > Sessão expira automaticamente após **30 minutos** de inatividade.
 
 ## Pré-requisitos
