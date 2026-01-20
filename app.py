@@ -18,15 +18,11 @@ log.addHandler(handler)
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
 
 now = lambda: datetime.now(timezone.utc)
-
 gb = lambda b: round(b / (1024 ** 3), 1)
 
 def format_disk(b):
     g = b / (1024 ** 3)
     return f"{g / 1024:.1f} TB" if g >= 1024 else f"{g:.1f} GB"
-
-def disk_usage():
-    return psutil.disk_usage("/host/mnt/c" if Path("/host/mnt/c").exists() else "/host")
 
 def get_os():
     try:
@@ -64,9 +60,39 @@ def logged_in():
     session["last_activity"] = now().isoformat()
     return True
 
+def get_disks():
+    disks = []
+    host_mnt = Path("/host/mnt")
+
+    if host_mnt.exists():
+        for p in sorted(host_mnt.iterdir()):
+            if p.is_dir() and len(p.name) == 1 and p.name.isalpha():
+                try:
+                    d = psutil.disk_usage(str(p))
+                    disks.append({
+                        "label": f"Disco ({p.name.upper()}:)",
+                        "used": format_disk(d.used),
+                        "total": format_disk(d.total),
+                        "percent": d.percent
+                    })
+                except Exception:
+                    pass
+    else:
+        try:
+            d = psutil.disk_usage("/")
+            disks.append({
+                "label": "Disco",
+                "used": format_disk(d.used),
+                "total": format_disk(d.total),
+                "percent": d.percent
+            })
+        except Exception:
+            pass
+
+    return disks
+
 def status():
     mem = psutil.virtual_memory()
-    disk = disk_usage()
     return {
         "hostname": socket.gethostname(),
         "os_info": get_os(),
@@ -76,9 +102,7 @@ def status():
         "memory_used": gb(mem.used),
         "memory_total": gb(mem.total),
         "memory_percent": mem.percent,
-        "disk_used": format_disk(disk.used),
-        "disk_total": format_disk(disk.total),
-        "disk_percent": disk.percent,
+        "disks": get_disks(),
         "updated_at": datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
     }
 

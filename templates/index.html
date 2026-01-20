@@ -26,8 +26,17 @@
 
     <div class="card">
       <div class="item"><span>CPU</span><span>{{ status.cpu_percent }}%</span></div>
-      <div class="item"><span>Memória</span><span>{{ status.memory_used }} / {{ status.memory_total }} GB ({{ status.memory_percent }}%)</span></div>
-      <div class="item"><span>Disco</span><span>{{ status.disk_used }} / {{ status.disk_total }} ({{ status.disk_percent }}%)</span></div>
+      <div class="item">
+        <span>Memória</span>
+        <span>{{ status.memory_used }} / {{ status.memory_total }} GB ({{ status.memory_percent }}%)</span>
+      </div>
+
+      {% for d in status.disks %}
+      <div class="item">
+        <span>{{ d.label }}</span>
+        <span>{{ d.used }} / {{ d.total }} ({{ d.percent }}%)</span>
+      </div>
+      {% endfor %}
     </div>
 
     <div class="footer">Atualizado em {{ status.updated_at }}</div>
