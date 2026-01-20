@@ -1,24 +1,17 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Status Page</title>
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
   <meta http-equiv="refresh" content="30">
-
-  <link rel="stylesheet"
-        href="{{ url_for('static', filename='style.css') }}?v=1">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=1">
 </head>
+
 <body>
   <div class="container">
     <h1>Status Page</h1>
-
-    <div class="logout">
-      <a href="/logout">Sair</a>
-    </div>
+    <div class="logout"><a href="/logout">Sair</a></div>
 
     <div class="card">
       <div class="item"><span>Sistema</span><span>{{ status.os_info }}</span></div>
@@ -29,19 +22,11 @@
 
     <div class="card">
       <div class="item"><span>CPU</span><span>{{ status.cpu_percent }}%</span></div>
-      <div class="item">
-        <span>Memória</span>
-        <span>{{ status.memory_used }} / {{ status.memory_total }} GB ({{ status.memory_percent }}%)</span>
-      </div>
-      <div class="item">
-        <span>Disco</span>
-        <span>{{ status.disk_used }} / {{ status.disk_total }} ({{ status.disk_percent }}%)</span>
-      </div>
+      <div class="item"><span>Memória</span><span>{{ status.memory_used }} / {{ status.memory_total }} GB ({{ status.memory_percent }}%)</span></div>
+      <div class="item"><span>Disco</span><span>{{ status.disk_used }} / {{ status.disk_total }} ({{ status.disk_percent }}%)</span></div>
     </div>
 
-    <div class="footer">
-      Atualizado em {{ status.updated_at }}
-    </div>
+    <div class="footer">Atualizado em {{ status.updated_at }}</div>
   </div>
 </body>
 </html>

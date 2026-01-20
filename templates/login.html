@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
   <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
   <div class="container">
     <h1>Status Page</h1>
@@ -16,19 +17,9 @@
       {% endif %}
 
       <form method="post" class="login-form">
-        <label>
-          <span>Usuário</span>
-          <input type="text" name="username" required>
-        </label>
-
-        <label>
-          <span>Senha</span>
-          <input type="password" name="password" required>
-        </label>
-
-        <button type="submit" class="login-button">
-          Entrar
-        </button>
+        <label><span>Usuário</span><input type="text" name="username" required></label>
+        <label><span>Senha</span><input type="password" name="password" required></label>
+        <button type="submit" class="login-button">Entrar</button>
       </form>
     </div>
   </div>
