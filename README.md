@@ -16,7 +16,6 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 - Timestamp da última atualização
 
 > Atualização automática da página a cada **30 segundos**.
-> A Sessão expira automaticamente após **30 minutos** de inatividade.
 
 ## Pré-requisitos
 
@@ -64,6 +63,7 @@ http://192.168.1.2/
 
 ## Observações importantes
 
+- A Sessão expira automaticamente após **30 minutos** de inatividade.
 - O container usa `--network host` para refletir corretamente o IP e recursos do host.
 - Não há coleta em background (as métricas são calculadas somente quando a página é acessada).
 - Consumo mínimo de recursos: CPU: ~0% | Memória: ~20–30 MB.
