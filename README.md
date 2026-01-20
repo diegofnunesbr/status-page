@@ -61,7 +61,7 @@ docker run -d \
 
 http://192.168.1.2/
 
-Substitua `192.168.1.2` pelo IP do seu **host**.
+> Substitua `192.168.1.2` pelo IP do seu **host**.
 
 ## Observações importantes
 
