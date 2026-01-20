@@ -26,9 +26,7 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 
 ## Configuração (obrigatória)
 
-A aplicação utiliza autenticação simples (login por página).
-
-As credenciais devem ser definidas em um arquivo `.env`.
+A aplicação utiliza autenticação simples (login por página). As credenciais devem ser definidas em um arquivo `.env`.
 
 ### Criar o arquivo `.env`
 
@@ -82,8 +80,6 @@ docker build -t diegofnunesbr/status-page:latest .
 docker login
 docker push diegofnunesbr/status-page:latest
 ```
-
-> O build local deve ser executado antes do push.
 
 ## Remoção
 
