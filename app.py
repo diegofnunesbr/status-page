@@ -31,10 +31,15 @@ def is_wsl():
         return False
 
 
-def get_disk_path():
-    if is_wsl() and Path("/mnt/c").exists():
-        return "/mnt/c"
-    return "/"
+def get_os_info():
+    try:
+        data = Path("/etc/os-release").read_text()
+        for line in data.splitlines():
+            if line.startswith("PRETTY_NAME="):
+                return line.split("=", 1)[1].replace('"', "")
+    except Exception:
+        pass
+    return "Unknown"
 
 
 def get_ip_address():
@@ -48,33 +53,52 @@ def get_ip_address():
         return "N/A"
 
 
-def get_system_status():
-    hostname = socket.gethostname()
-    os_info = Path("/etc/os-release").read_text().split("PRETTY_NAME=")[1].split("\n")[0].replace('"', "")
-    uptime_seconds = int(time.time() - psutil.boot_time())
-    uptime = str(timedelta(seconds=uptime_seconds))
+def get_disk_usage():
+    if not is_wsl():
+        d = psutil.disk_usage("/")
+        return (
+            round(d.used / (1024 ** 3), 1),
+            round(d.total / (1024 ** 3), 1),
+            round(d.percent, 1),
+        )
 
-    cpu_percent = psutil.cpu_percent(interval=0.5)
+    total_used = 0
+    total_size = 0
+
+    try:
+        for p in Path("/mnt").iterdir():
+            if p.is_dir() and len(p.name) == 1:
+                d = psutil.disk_usage(str(p))
+                total_used += d.used
+                total_size += d.total
+    except Exception:
+        pass
+
+    if total_size == 0:
+        return 0, 0, 0
+
+    used_gb = round(total_used / (1024 ** 3), 1)
+    total_gb = round(total_size / (1024 ** 3), 1)
+    percent = round((total_used / total_size) * 100, 1)
+
+    return used_gb, total_gb, percent
+
+
+def get_system_status():
+    uptime_seconds = int(time.time() - psutil.boot_time())
 
     mem = psutil.virtual_memory()
-    memory_used = round(mem.used / (1024 ** 3), 1)
-    memory_total = round(mem.total / (1024 ** 3), 1)
-    memory_percent = round(mem.percent, 1)
-
-    disk = psutil.disk_usage(get_disk_path())
-    disk_used = round(disk.used / (1024 ** 3), 1)
-    disk_total = round(disk.total / (1024 ** 3), 1)
-    disk_percent = round(disk.percent, 1)
+    disk_used, disk_total, disk_percent = get_disk_usage()
 
     return {
-        "hostname": hostname,
-        "os_info": os_info,
+        "hostname": socket.gethostname(),
+        "os_info": get_os_info(),
         "ip_address": get_ip_address(),
-        "uptime": uptime,
-        "cpu_percent": cpu_percent,
-        "memory_used": memory_used,
-        "memory_total": memory_total,
-        "memory_percent": memory_percent,
+        "uptime": str(timedelta(seconds=uptime_seconds)),
+        "cpu_percent": psutil.cpu_percent(interval=0.5),
+        "memory_used": round(mem.used / (1024 ** 3), 1),
+        "memory_total": round(mem.total / (1024 ** 3), 1),
+        "memory_percent": round(mem.percent, 1),
         "disk_used": disk_used,
         "disk_total": disk_total,
         "disk_percent": disk_percent,
@@ -123,8 +147,7 @@ def index():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
 
-    status = get_system_status()
-    return render_template("index.html", status=status)
+    return render_template("index.html", status=get_system_status())
 
 
 if __name__ == "__main__":
