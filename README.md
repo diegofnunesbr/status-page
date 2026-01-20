@@ -73,7 +73,8 @@ Substitua `192.168.1.2` pelo IP do seu **host**.
 
 ```bash
 git clone https://github.com/diegofnunesbr/status-page
-docker build -t diegofnunesbr/status-page:latest status-page
+cd status-page
+docker build -t diegofnunesbr/status-page:latest .
 ```
 
 ## Publicação no Docker Hub
@@ -82,6 +83,8 @@ docker build -t diegofnunesbr/status-page:latest status-page
 docker login
 docker push diegofnunesbr/status-page:latest
 ```
+
+> O build local deve ser executado antes do push.
 
 ## Remoção
 
