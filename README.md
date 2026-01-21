@@ -24,20 +24,6 @@ O **status-page** é uma aplicação HTTP ultra-leve para exibir o status básic
 
 ---
 
-## Configuração (obrigatória)
-
-A aplicação utiliza autenticação simples por página, com credenciais definidas em um arquivo `.env`.
-
-### Criar o arquivo `.env`
-
-```bash
-cat <<EOF > "$HOME/.env"
-STATUS_USER=admin
-STATUS_PASS=password
-STATUS_SECRET=chave_randomica
-EOF
-```
-
 ## Uso rápido (recomendado)
 
 ```bash
@@ -45,7 +31,9 @@ docker run -d \
   --name status-page \
   --restart unless-stopped \
   --network host \
-  --env-file "$HOME/.env" \
+  -e STATUS_USER=admin \
+  -e STATUS_PASS=password \
+  -e STATUS_SECRET=$(openssl rand -hex 32) \
   -v /etc/hostname:/host/etc/hostname:ro \
   -v /proc:/host/proc:ro \
   -v /:/host:ro \
@@ -93,12 +81,6 @@ docker rm -f status-page
 
 ```bash
 docker rmi diegofnunesbr/status-page:latest
-```
-
-### Remover o arquivo `.env`
-
-```bash
-rm -f "$HOME/.env"
 ```
 
 ## Licença
