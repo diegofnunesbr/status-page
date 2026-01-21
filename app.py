@@ -10,12 +10,12 @@ SESSION_TIMEOUT = timedelta(minutes=30)
 STATUS_USER = os.getenv("STATUS_USER")
 STATUS_PASS = os.getenv("STATUS_PASS")
 
-log = logging.getLogger("status-page")
-log.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-handler.setFormatter(logging.Formatter("[%(asctime)s] %(message)s"))
-log.addHandler(handler)
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(message)s"
+)
 logging.getLogger("werkzeug").setLevel(logging.ERROR)
+log = logging.getLogger("status-page")
 
 now = lambda: datetime.now(timezone.utc)
 gb = lambda b: round(b / (1024 ** 3), 1)
@@ -36,12 +36,11 @@ def get_os():
 
 def get_ip():
     try:
-        out = subprocess.check_output(
+        return subprocess.check_output(
             ["ip", "route", "get", "1.1.1.1"],
             stderr=subprocess.DEVNULL,
             text=True
-        )
-        return out.split("src")[1].split()[0]
+        ).split("src")[1].split()[0]
     except Exception:
         return "N/A"
 
@@ -62,26 +61,21 @@ def logged_in():
 
 def get_disks():
     disks = []
-    host_mnt = Path("/host/mnt")
+    base = Path("/host/mnt")
 
-    if host_mnt.exists():
-        for p in sorted(host_mnt.iterdir()):
-            if p.is_dir() and len(p.name) == 1 and p.name.isalpha():
-                try:
-                    d = psutil.disk_usage(str(p))
-                    disks.append({
-                        "label": f"Disco ({p.name.upper()}:)",
-                        "used": format_disk(d.used),
-                        "total": format_disk(d.total),
-                        "percent": d.percent
-                    })
-                except Exception:
-                    pass
+    if base.exists():
+        paths = [
+            p for p in sorted(base.iterdir())
+            if p.is_dir() and len(p.name) == 1 and p.name.isalpha()
+        ]
     else:
+        paths = [Path("/")]
+
+    for p in paths:
         try:
-            d = psutil.disk_usage("/")
+            d = psutil.disk_usage(str(p))
             disks.append({
-                "label": "Disco",
+                "label": f"Disco ({p.name.upper()}:)" if p.name != "/" else "Disco",
                 "used": format_disk(d.used),
                 "total": format_disk(d.total),
                 "percent": d.percent
